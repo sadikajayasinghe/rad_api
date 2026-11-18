@@ -6,7 +6,7 @@ import { AuthRequest } from "../middleware/auth"
 const isAdmin = (req: AuthRequest) =>
   req.user?.roles?.includes("ADMIN")
 
-// 1. Create activity
+
 export const createActivity = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) {
@@ -22,18 +22,44 @@ export const createActivity = async (req: AuthRequest, res: Response) => {
       message: "Activity created successfully",
       activity
     })
-    
+
   } catch (error) {
     return res.status(500).json({ message: "Failed to create activity" })
   }
 }
 
-// 2. Get all approved activities
+// 2. Get all approved activities with optional filtering
 export const getActivities = async (req: Request, res: Response) => {
   try {
-    const activities = await ActivityModel.find({ status: "APPROVED" })
+    const { category, location, search, minPrice, maxPrice } = req.query
+    const filter: any = { status: "APPROVED" }
 
-    return res.status(200).json({ activities })
+    if (category) {
+      filter.category = new RegExp(String(category), "i")
+    }
+
+    if (location) {
+      filter.location = new RegExp(String(location), "i")
+    }
+
+    if (search) {
+      filter.$or = [
+        { title: new RegExp(String(search), "i") },
+        { description: new RegExp(String(search), "i") },
+        { location: new RegExp(String(search), "i") },
+        { category: new RegExp(String(search), "i") }
+      ]
+    }
+
+    if (minPrice || maxPrice) {
+      filter.pricePerPerson = {}
+      if (minPrice) filter.pricePerPerson.$gte = Number(minPrice)
+      if (maxPrice) filter.pricePerPerson.$lte = Number(maxPrice)
+    }
+
+    const activities = await ActivityModel.find(filter).populate("providerId", "name email")
+
+    return res.status(200).json({ count: activities.length, activities })
   } catch (error) {
     return res.status(500).json({ message: "Failed to get activities" })
   }
@@ -119,3 +145,18 @@ export const deleteActivity = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ message: "Failed to delete activity" })
   }
 }
+
+// 6. Get provider's own activities
+export const getMyActivities = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" })
+    }
+
+    const activities = await ActivityModel.find({ providerId: req.user.sub })
+    return res.status(200).json({ activities })
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to get provider activities" })
+  }
+}
+

@@ -1,9 +1,9 @@
-name: rad-article-api
+name: rad-tourist
 
 services:
   mongodb:
     image: mongo:7.0
-    container_name: rad-article
+    container_name: rad-tour
     restart: unless-stopped
     ports:
       - "27017:27017"

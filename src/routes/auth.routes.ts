@@ -1,9 +1,9 @@
 import { Router } from "express"
 import {
-  getMyDetails,
-  getRefreshToken,
+  register,
   login,
-  register
+  getRefreshToken,
+  getMyDetails
 } from "../controllers/auth.controller"
 import { authenticate } from "../middleware/auth"
 
