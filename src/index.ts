@@ -11,6 +11,7 @@ import ActivityRouter from "./routes/activity.routes"
 import BookingRouter from "./routes/booking.routes"
 import ReviewRouter from "./routes/review.routes"
 import AdminRouter from "./routes/admin.routes"
+import ChatbotRouter from "./routes/chatbot.routes"
 
 const PORT = process.env.PORT || 3000
 const app = express()
@@ -27,6 +28,7 @@ app.use("/api/v1/activities", ActivityRouter)
 app.use("/api/v1/bookings", BookingRouter)
 app.use("/api/v1/reviews", ReviewRouter)
 app.use("/api/v1/admin", AdminRouter)
+app.use("/api/v1/chat", ChatbotRouter)
 
 // Health Check
 app.get("/api/health", (_req, res) => {
