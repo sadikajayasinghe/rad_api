@@ -67,7 +67,7 @@ const activitySchema = new Schema<IActivity>(
     status: {
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED"],
-      default: "PENDING"
+      default: "APPROVED"
     }
   },
   { timestamps: true }

@@ -4,7 +4,7 @@ import { UserModel } from "../models/user.model"
 import { ActivityModel } from "../models/activity.model"
 import { BookingModel } from "../models/booking.model"
 
-// 1. Get all users
+//Get all users
 export const getAllUsers = async (_req: AuthRequest, res: Response) => {
   try {
     const users = await UserModel.find().select("-password").sort({ createdAt: -1 })
@@ -14,7 +14,7 @@ export const getAllUsers = async (_req: AuthRequest, res: Response) => {
   }
 }
 
-// 2. Approve or update user (e.g. approve provider)
+//Approve or update user (e.g. approve provider)
 export const updateUserApproval = async (req: AuthRequest, res: Response) => {
   try {
     const { approve } = req.body
@@ -37,7 +37,7 @@ export const updateUserApproval = async (req: AuthRequest, res: Response) => {
   }
 }
 
-// 3. Get all activities (including PENDING, APPROVED, REJECTED)
+// Get all activities (including PENDING, APPROVED, REJECTED)
 export const getAllActivitiesAdmin = async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.query
@@ -53,7 +53,7 @@ export const getAllActivitiesAdmin = async (req: AuthRequest, res: Response) => 
   }
 }
 
-// 4. Approve / Reject Activity
+//Approve / Reject Activity
 export const updateActivityStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.body

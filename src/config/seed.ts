@@ -16,7 +16,7 @@ const seedDatabase = async () => {
     await mongoose.connect(mongoUri)
     console.log("Connected to MongoDB for seeding...")
 
-    // 1. Create or ensure Default Admin
+    
     const adminEmail = "admin@tourist.lk"
     let admin = await UserModel.findOne({ email: adminEmail })
     if (!admin) {
@@ -31,7 +31,7 @@ const seedDatabase = async () => {
       console.log("Admin account created: admin@tourist.lk / Admin@123")
     }
 
-    // 2. Create or ensure Sample Provider
+    
     const providerEmail = "provider@lankasafari.lk"
     let provider = await UserModel.findOne({ email: providerEmail })
     if (!provider) {
@@ -46,7 +46,7 @@ const seedDatabase = async () => {
       console.log("Provider account created: provider@lankasafari.lk / Provider@123")
     }
 
-    // 3. Seed Activities
+    
     const sampleActivities: Array<{
       title: string
       description: string
@@ -70,21 +70,6 @@ const seedDatabase = async () => {
         maxParticipants: 6,
         images: [
           "https://images.unsplash.com/photo-1544979590-37e9b47eb705"
-        ],
-        providerId: provider._id,
-        status: "APPROVED"
-      },
-      {
-        title: "Mirissa Whale & Dolphin Watching",
-        description:
-          "Join an early morning boat excursion in the Indian Ocean to witness majestic blue whales, fin whales, and playful pods of spinner dolphins in their natural habitat.",
-        category: "Ocean Adventure",
-        location: "Mirissa",
-        pricePerPerson: 8000,
-        duration: "3-5 Hours",
-        maxParticipants: 25,
-        images: [
-          "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9"
         ],
         providerId: provider._id,
         status: "APPROVED"

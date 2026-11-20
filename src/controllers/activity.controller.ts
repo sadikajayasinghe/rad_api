@@ -13,9 +13,19 @@ export const createActivity = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" })
     }
 
+    // Handle images if passed as a string or array
+    let images = req.body.images
+    if (typeof images === "string") {
+      images = images.split(",").map((s: string) => s.trim()).filter(Boolean)
+    } else if (!Array.isArray(images)) {
+      images = []
+    }
+
     const activity = await ActivityModel.create({
       ...req.body,
-      providerId: req.user.sub
+      images,
+      providerId: req.user.sub,
+      status: req.body.status || "APPROVED"
     })
 
     return res.status(201).json({
@@ -23,8 +33,9 @@ export const createActivity = async (req: AuthRequest, res: Response) => {
       activity
     })
 
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to create activity" })
+  } catch (error: any) {
+    console.error("Create Activity Error:", error)
+    return res.status(400).json({ message: error.message || "Failed to create activity" })
   }
 }
 
@@ -32,7 +43,8 @@ export const createActivity = async (req: AuthRequest, res: Response) => {
 export const getActivities = async (req: Request, res: Response) => {
   try {
     const { category, location, search, minPrice, maxPrice } = req.query
-    const filter: any = { status: "APPROVED" }
+    // Include all active activities (hide only explicitly REJECTED ones)
+    const filter: any = { status: { $ne: "REJECTED" } }
 
     if (category) {
       filter.category = new RegExp(String(category), "i")
@@ -70,7 +82,7 @@ export const getActivityById = async (req: Request, res: Response) => {
   try {
     const activity = await ActivityModel.findOne({
       _id: req.params.id,
-      status: "APPROVED"
+      status: { $ne: "REJECTED" }
     })
 
     if (!activity) {
@@ -96,15 +108,32 @@ export const updateActivity = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: "Activity not found" })
     }
 
-    const isOwner = activity.providerId.toString() === req.user.sub
+    // Check ownership
+    const isOwner = String(activity.providerId) === String(req.user.sub)
 
     if (!isOwner && !isAdmin(req)) {
-      return res.status(403).json({ message: "Access denied" })
+      return res.status(403).json({ message: "Access denied. You can only update your own activities." })
+    }
+
+    // Prepare update data
+    const updateData = { ...req.body }
+
+    // If images is a string, convert to array
+    if (typeof updateData.images === "string") {
+      updateData.images = updateData.images.split(",").map((s: string) => s.trim()).filter(Boolean)
+    }
+
+    // Protect providerId from being changed
+    delete updateData.providerId
+
+    // Only admin can change status directly
+    if (!isAdmin(req)) {
+      delete updateData.status
     }
 
     const updatedActivity = await ActivityModel.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     )
 
@@ -112,8 +141,9 @@ export const updateActivity = async (req: AuthRequest, res: Response) => {
       message: "Activity updated successfully",
       activity: updatedActivity
     })
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to update activity" })
+  } catch (error: any) {
+    console.error("Update Activity Error:", error)
+    return res.status(400).json({ message: error.message || "Failed to update activity" })
   }
 }
 
@@ -130,7 +160,7 @@ export const deleteActivity = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: "Activity not found" })
     }
 
-    const isOwner = activity.providerId.toString() === req.user.sub
+    const isOwner = String(activity.providerId) === String(req.user.sub)
 
     if (!isOwner && !isAdmin(req)) {
       return res.status(403).json({ message: "Access denied" })
@@ -141,7 +171,7 @@ export const deleteActivity = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({
       message: "Activity deleted successfully"
     })
-  } catch (error) {
+  } catch (error: any) {
     return res.status(500).json({ message: "Failed to delete activity" })
   }
 }

@@ -23,7 +23,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
     }
 
     const activity = await ActivityModel.findById(activityId)
-    if (!activity || activity.status !== "APPROVED") {
+    if (!activity || activity.status === "REJECTED") {
       return res.status(404).json({ message: "Activity not found or not currently available" })
     }
 
